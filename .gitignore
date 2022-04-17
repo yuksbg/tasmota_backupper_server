@@ -1,0 +1,4 @@
+.idea
+backup_data/**
+app_data.db
+.DS_Store

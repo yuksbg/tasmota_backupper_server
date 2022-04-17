@@ -1,0 +1,45 @@
+variables:
+  IMG: "registry.yuks.me/tasmota_backupper"
+  minio_host: $minio_host
+  minio_username: $minio_username
+  minio_password: $minio_password
+  minio_bucket: $minio_bucket
+
+
+stages:
+  - download
+  - build
+
+cache:
+  key: one-cache
+  paths:
+    - fe_ui
+
+download:
+  stage: download
+  image: alpine
+  script:
+    - apk update && apk add curl openssl
+    - sh ./download_minio.sh $minio_host $minio_username $minio_password $minio_bucket /ui.tar.gz ui.tar.gz
+    - tar -xf ui.tar.gz
+    - rm -rf fe_ui
+    - mv dist fe_ui
+  artifacts:
+    untracked: true
+    paths:
+      - /fe_ui/
+    expire_in: 1 days
+
+
+build:
+  stage: build
+  dependencies:
+    - download
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ "" ]
+  script:
+    - ls -lha fe_ui
+    - mkdir -p /kaniko/.docker
+    - echo "$KANIKO_AUTH" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination "$IMG" --single-snapshot

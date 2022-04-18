@@ -58,6 +58,7 @@ func main() {
 		api.POST("devices/clear_all", devices.DeleteAll)
 
 		api.POST("backup/manual/:mac", devices.HandleManualRunBackup)
+		api.POST("backup/all", devices.HandleBackupAll)
 		api.GET("backup/get_backups/:mac", devices.HandleGetBackups)
 		api.GET("backup/download/:mac/:filename", download.HandleDownload)
 		api.POST("backup/delete/:mac/:filename", files.HandleDelete)
